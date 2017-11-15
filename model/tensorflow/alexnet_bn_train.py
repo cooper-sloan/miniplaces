@@ -14,10 +14,10 @@ data_mean = np.asarray([0.45834960097,0.44674252445,0.41352266842])
 # Training Parameters
 learning_rate = 0.001
 dropout = 0.5 # Dropout, probability to keep units
-training_iters = 15000
+training_iters = 1
 step_display = 50
 step_save = 10000
-path_save = 'alexnet_bn'
+path_save = './alexnet_bn'
 start_from = ''
 
 def batch_norm_layer(x, train_phase, scope_bn):
@@ -117,10 +117,10 @@ loader_val = DataLoaderDisk(**opt_data_val)
 #loader_val = DataLoaderH5(**opt_data_val)
 
 # tf Graph input
-x = tf.placeholder(tf.float32, [None, fine_size, fine_size, c])
-y = tf.placeholder(tf.int64, None)
-keep_dropout = tf.placeholder(tf.float32)
-train_phase = tf.placeholder(tf.bool)
+x = tf.placeholder(tf.float32, [None, fine_size, fine_size, c],name="x")
+y = tf.placeholder(tf.int64, None,name="y")
+keep_dropout = tf.placeholder(tf.float32,name="keep_dropout")
+train_phase = tf.placeholder(tf.bool,name="train_phase")
 
 # Construct model
 logits = alexnet(x, keep_dropout, train_phase)
@@ -130,8 +130,8 @@ loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y, l
 train_optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
 
 # Evaluate model
-accuracy1 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(logits, y, 1), tf.float32))
-accuracy5 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(logits, y, 5), tf.float32))
+accuracy1 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(logits, y, 1), tf.float32),name="accuracy1")
+accuracy5 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(logits, y, 5), tf.float32),name="accuracy5")
 
 # define initialization
 init = tf.global_variables_initializer()

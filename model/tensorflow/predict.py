@@ -32,20 +32,16 @@ opt_data_test = {
 loader_test = DataLoaderDisk(**opt_data_test)
 
 # tf Graph input
-x = tf.placeholder(tf.float32, [None, fine_size, fine_size, c])
-y = tf.placeholder(tf.int64, None)
-keep_dropout = tf.placeholder(tf.float32)
-train_phase = tf.placeholder(tf.bool)
 
-logits = alexnet(x, keep_dropout, train_phase)
+graph = tf.get_default_graph()
+x = graph.get_tensor_by_name("x:0")
+y = graph.get_tensor_by_name("y:0")
+keep_dropout = graph.get_tensor_by_name("keep_dropout:0")
+train_phase = graph.get_tensor_by_name("train_phase:0")
 
-loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y, logits=logits))
-train_optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
+accuracy1 = graph.get_tensor_by_name("accuracy1:0")
+accuracy5 = graph.get_tensor_by_name("accuracy5:0")
 
-accuracy1 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(logits, y, 1), tf.float32))
-accuracy5 = tf.reduce_mean(tf.cast(tf.nn.in_top_k(logits, y, 5), tf.float32))
-
-init = tf.global_variables_initializer()
 saver = tf.train.import_meta_graph('../../model_files/alexnet_bn-5800.meta')
 
 with tf.Session() as sess:
@@ -62,7 +58,6 @@ with tf.Session() as sess:
     loader_test.reset()
     for i in range(num_batch):
         images_batch, labels_batch = loader_test.next_batch(batch_size)
-        x = 
         acc1, acc5 = sess.run([accuracy1, accuracy5], feed_dict={x: images_batch, y: labels_batch, keep_dropout: 1., train_phase: False})
         acc1_total += acc1
         acc5_total += acc5
