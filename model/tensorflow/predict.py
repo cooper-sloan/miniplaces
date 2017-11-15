@@ -5,7 +5,7 @@ from tensorflow.contrib.layers.python.layers import batch_norm
 from DataLoader import *
 
 # Dataset Parameters
-batch_size = 256
+batch_size = 1
 load_size = 256
 fine_size = 224
 c = 3
@@ -17,12 +17,11 @@ dropout = 0.5 # Dropout, probability to keep units
 training_iters = 15000
 step_display = 50
 step_save = 10000
-path_save = 'alexnet_bn'
 start_from = ''
 
 opt_data_test = {
     'data_root': '../../data/images/',   # MODIFY PATH ACCORDINGLY
-    'data_list': '../../data/train.txt',   # MODIFY PATH ACCORDINGLY
+    'data_list': '../../data/test.txt',   # MODIFY PATH ACCORDINGLY
     'load_size': load_size,
     'fine_size': fine_size,
     'data_mean': data_mean,
@@ -32,39 +31,43 @@ opt_data_test = {
 loader_test = DataLoaderDisk(**opt_data_test)
 
 # tf Graph input
+saver = tf.train.import_meta_graph('./model_out/model-15000.meta')
+
+sess = tf.Session()
+saver.restore(sess, tf.train.latest_checkpoint('./model_out/'))
 
 graph = tf.get_default_graph()
 x = graph.get_tensor_by_name("x:0")
 y = graph.get_tensor_by_name("y:0")
 keep_dropout = graph.get_tensor_by_name("keep_dropout:0")
 train_phase = graph.get_tensor_by_name("train_phase:0")
+logits = graph.get_tensor_by_name("logits:0")
+probs =tf.nn.softmax(logits)
+values,indices = tf.nn.top_k(probs,k=5)
 
-accuracy1 = graph.get_tensor_by_name("accuracy1:0")
-accuracy5 = graph.get_tensor_by_name("accuracy5:0")
 
-saver = tf.train.import_meta_graph('../../model_files/alexnet_bn-5800.meta')
 
-with tf.Session() as sess:
-    # Initialization
-    saver.restore(sess, tf.train.latest_checkpoint('../../model_files'))
+step = 0
 
-    step = 0
+# Evaluate on the whole validation set
+print('Evaluation on the whole test set...')
+num_batch = loader_test.size()//batch_size
+acc1_total = 0.
+acc5_total = 0.
 
-    # Evaluate on the whole validation set
-    print('Evaluation on the whole validation set...')
-    num_batch = loader_val.size()//batch_size
-    acc1_total = 0.
-    acc5_total = 0.
-    loader_test.reset()
-    for i in range(num_batch):
-        images_batch, labels_batch = loader_test.next_batch(batch_size)
-        acc1, acc5 = sess.run([accuracy1, accuracy5], feed_dict={x: images_batch, y: labels_batch, keep_dropout: 1., train_phase: False})
-        acc1_total += acc1
-        acc5_total += acc5
-        print("Test Accuracy Top1 = " + \
-              "{:.4f}".format(acc1) + ", Top5 = " + \
-              "{:.4f}".format(acc5))
 
-    acc1_total /= num_batch
-    acc5_total /= num_batch
-    print('Evaluation Finished! Accuracy Top1 = ' + "{:.4f}".format(acc1_total) + ", Top5 = " + "{:.4f}".format(acc5_total))
+with open("../../data/test.txt",'r') as f:
+    with open("../../data/prediction.txt",'w') as fo:
+        loader_test.reset()
+        out_lines = []
+        in_lines = f.readlines()
+        for i in range(num_batch):
+            images_batch, labels_batch = loader_test.next_batch(batch_size)
+            p = sess.run(indices, feed_dict={x: images_batch, y: labels_batch, keep_dropout: 1., train_phase: False})
+            in_line = in_lines[i].split(" ")
+            file_name = in_line[0]
+            out_line = file_name
+            for v in p[0]:
+                out_line += " " + str(v)
+            out_lines.append(out_line)
+        fo.write("\n".join(out_lines))

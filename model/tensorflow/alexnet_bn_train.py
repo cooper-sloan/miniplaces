@@ -5,7 +5,7 @@ from tensorflow.contrib.layers.python.layers import batch_norm
 from DataLoader import *
 
 # Dataset Parameters
-batch_size = 256
+batch_size = 64
 load_size = 256
 fine_size = 224
 c = 3
@@ -14,10 +14,10 @@ data_mean = np.asarray([0.45834960097,0.44674252445,0.41352266842])
 # Training Parameters
 learning_rate = 0.001
 dropout = 0.5 # Dropout, probability to keep units
-training_iters = 1
+training_iters = 17000
 step_display = 50
-step_save = 10000
-path_save = './alexnet_bn'
+step_save = 1000
+path_save = './model_out/model'
 start_from = ''
 
 def batch_norm_layer(x, train_phase, scope_bn):
@@ -87,7 +87,7 @@ def alexnet(x, keep_dropout, train_phase):
     fc7 = tf.nn.dropout(fc7, keep_dropout)
 
     # Output FC
-    out = tf.add(tf.matmul(fc7, weights['wo']), biases['bo'])
+    out = tf.add(tf.matmul(fc7, weights['wo']), biases['bo'],name="logits")
 
     return out
 
