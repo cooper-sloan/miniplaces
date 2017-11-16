@@ -1,4 +1,5 @@
 import os, datetime
+import pickle
 import numpy as np
 import tensorflow as tf
 import alexnet_model
@@ -17,11 +18,11 @@ data_mean = np.asarray([0.45834960097,0.44674252445,0.41352266842])
 # Training Parameters
 learning_rate = 0.0001
 dropout = 0.5 # Dropout, probability to keep units
-training_iters = 2000
+training_iters = 1
 step_display = 50
 step_save = 200
 path_save = './model_out/res'
-start_from = './model_out/res-6000.meta'
+start_from = './model_out/res-2000.meta'
 
 def batch_norm_layer(x, train_phase, scope_bn):
     return batch_norm(x, decay=0.9, center=True, scale=True,
@@ -116,8 +117,8 @@ with tf.Session() as sess:
                   "{:.4f}".format(acc1) + ", Top5 = " + \
                   "{:.4f}".format(acc5))
 
-            convergence_data['top1'].append(top1)
-            convergence_data['top5'].append(top5)
+            convergence_data['top1'].append(acc1)
+            convergence_data['top5'].append(acc5)
         sess.run(train_optimizer, feed_dict={x: images_batch, y: labels_batch, keep_dropout: dropout, train_phase: True})
 
         step += 1
@@ -126,26 +127,26 @@ with tf.Session() as sess:
             saver.save(sess, path_save, global_step=step)
             print("Model saved at Iter %d !" %(step))
 
+    with open(convergence_data['name']+'.txt', 'w') as f:
+        pickle.dump(convergence_data,f)
 
     print("Optimization Finished!")
 
-    with open(convergence_data['name']+'.txt', 'w') as file:
-        file.write(json.dumps(convergence_data))
     # Evaluate on the whole validation set
-    print('Evaluation on the whole validation set...')
-    num_batch = loader_val.size()//batch_size
-    acc1_total = 0.
-    acc5_total = 0.
-    loader_val.reset()
-    for i in range(num_batch):
-        images_batch, labels_batch = loader_val.next_batch(batch_size)
-        acc1, acc5 = sess.run([accuracy1, accuracy5], feed_dict={x: images_batch, y: labels_batch, keep_dropout: 1., train_phase: False})
-        acc1_total += acc1
-        acc5_total += acc5
-        print("Validation Accuracy Top1 = " + \
-              "{:.4f}".format(acc1) + ", Top5 = " + \
-              "{:.4f}".format(acc5))
+    # print('Evaluation on the whole validation set...')
+    # num_batch = loader_val.size()//batch_size
+    # acc1_total = 0.
+    # acc5_total = 0.
+    # loader_val.reset()
+    # for i in range(num_batch):
+        # images_batch, labels_batch = loader_val.next_batch(batch_size)
+        # acc1, acc5 = sess.run([accuracy1, accuracy5], feed_dict={x: images_batch, y: labels_batch, keep_dropout: 1., train_phase: False})
+        # acc1_total += acc1
+        # acc5_total += acc5
+        # print("Validation Accuracy Top1 = " + \
+              # "{:.4f}".format(acc1) + ", Top5 = " + \
+              # "{:.4f}".format(acc5))
 
-    acc1_total /= num_batch
-    acc5_total /= num_batch
-    print('Evaluation Finished! Accuracy Top1 = ' + "{:.4f}".format(acc1_total) + ", Top5 = " + "{:.4f}".format(acc5_total))
+    # acc1_total /= num_batch
+    # acc5_total /= num_batch
+    # print('Evaluation Finished! Accuracy Top1 = ' + "{:.4f}".format(acc1_total) + ", Top5 = " + "{:.4f}".format(acc5_total))

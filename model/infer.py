@@ -23,10 +23,11 @@ opt_data_test = {
 loader_test = DataLoaderDisk(**opt_data_test)
 
 # tf Graph input
-saver = tf.train.import_meta_graph('./model_out/res-2000.meta')
+saver = tf.train.import_meta_graph('./model_out/res-1800.meta')
 
 sess = tf.Session()
-saver.restore(sess, tf.train.latest_checkpoint('./model_out/'))
+# saver.restore(sess, tf.train.latest_checkpoint('./model_out/'))
+saver.restore(sess, './model_out/res-2000')
 
 graph = tf.get_default_graph()
 x = graph.get_tensor_by_name("x:0")
