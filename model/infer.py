@@ -23,7 +23,7 @@ opt_data_test = {
 loader_test = DataLoaderDisk(**opt_data_test)
 
 # tf Graph input
-saver = tf.train.import_meta_graph('./model_out/model-15000.meta')
+saver = tf.train.import_meta_graph('./model_out/res-2000.meta')
 
 sess = tf.Session()
 saver.restore(sess, tf.train.latest_checkpoint('./model_out/'))
@@ -31,8 +31,8 @@ saver.restore(sess, tf.train.latest_checkpoint('./model_out/'))
 graph = tf.get_default_graph()
 x = graph.get_tensor_by_name("x:0")
 y = graph.get_tensor_by_name("y:0")
-keep_dropout = graph.get_tensor_by_name("keep_dropout:0")
-train_phase = graph.get_tensor_by_name("train_phase:0")
+# keep_dropout = graph.get_tensor_by_name("keep_dropout:0")
+# train_phase = graph.get_tensor_by_name("train_phase:0")
 logits = graph.get_tensor_by_name("logits:0")
 values,indices = tf.nn.top_k(logits,k=5)
 print('Inference on the whole test set...')
@@ -44,7 +44,8 @@ with open("../data/test.txt",'r') as f:
         in_lines = f.readlines()
         for i in range(num_batch):
             images_batch, labels_batch = loader_test.next_batch(batch_size)
-            p = sess.run(indices, feed_dict={x: images_batch, y: labels_batch, keep_dropout: 1., train_phase: False})
+            # p = sess.run(indices, feed_dict={x: images_batch, y: labels_batch, keep_dropout: 1., train_phase: False})
+            p = sess.run(indices, feed_dict={x: images_batch, y: labels_batch})
             in_line = in_lines[i].split(" ")
             file_name = in_line[0]
             out_line = file_name
