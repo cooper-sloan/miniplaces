@@ -5,6 +5,7 @@ import alexnet_model
 import resnet_model
 from tensorflow.contrib.layers.python.layers import batch_norm
 from DataLoader import *
+import json
 
 # Dataset Parameters
 batch_size = 64
@@ -79,6 +80,15 @@ saver = tf.train.Saver()
 
 #writer = tf.train.SummaryWriter('.', graph=tf.get_default_graph())
 
+convergence_data = {
+    'name': 'conergence_data',
+    'top1': [],
+    'top5': [],
+    'learning_rate': learning_rate,
+    'dropout': dropout,
+    'notes': '',
+    }
+# Launch the graph
 with tf.Session() as sess:
     if len(start_from)>1:
         saver.restore(sess, tf.train.latest_checkpoint('./model_out/'))
@@ -106,6 +116,8 @@ with tf.Session() as sess:
                   "{:.4f}".format(acc1) + ", Top5 = " + \
                   "{:.4f}".format(acc5))
 
+            convergence_data['top1'].append(top1)
+            convergence_data['top5'].append(top5)
         sess.run(train_optimizer, feed_dict={x: images_batch, y: labels_batch, keep_dropout: dropout, train_phase: True})
 
         step += 1
@@ -114,8 +126,12 @@ with tf.Session() as sess:
             saver.save(sess, path_save, global_step=step)
             print("Model saved at Iter %d !" %(step))
 
+
     print("Optimization Finished!")
 
+    with open(convergence_data['name']+'.txt', 'w') as file:
+        file.write(json.dumps(convergence_data))
+    # Evaluate on the whole validation set
     print('Evaluation on the whole validation set...')
     num_batch = loader_val.size()//batch_size
     acc1_total = 0.
