@@ -21,9 +21,9 @@ def createH5(params):
 	list_lab = np.array(list_lab, np.uint8)
 	N = list_im.shape[0]
 	print('# Images found:', N)
-	
+
 	# permutation
-	perm = np.random.permutation(N) 
+	perm = np.random.permutation(N)
 	list_im = list_im[perm]
 	list_lab = list_lab[perm]
 
@@ -47,16 +47,16 @@ if __name__=='__main__':
 		'name': 'miniplaces',
 		'split': 'train',
 		'img_resize': 256,
-		'data_root': '../../data/images/',	# MODIFY PATH ACCORDINGLY
-    		'data_list': '../../data/train.txt'
+		'data_root': '../data/images/',	# MODIFY PATH ACCORDINGLY
+    		'data_list': '../data/train.txt'
 	}
 
 	params_val = {
 		'name': 'miniplaces',
 		'split': 'val',
 		'img_resize': 256,
-		'data_root': '../../data/images/',	# MODIFY PATH ACCORDINGLY
-    		'data_list': '../../data/val.txt'
+		'data_root': '../data/images/',	# MODIFY PATH ACCORDINGLY
+    		'data_list': '../data/val.txt'
 	}
 
 	createH5(params_train)

@@ -35,7 +35,6 @@ def alexnet(x, keep_dropout, train_phase):
         'wc3': tf.Variable(tf.random_normal([3, 3, 256, 384], stddev=np.sqrt(2./(3*3*256)))),
         'wc4': tf.Variable(tf.random_normal([3, 3, 384, 256], stddev=np.sqrt(2./(3*3*384)))),
         'wc5': tf.Variable(tf.random_normal([3, 3, 256, 256], stddev=np.sqrt(2./(3*3*256)))),
-
         'wf6': tf.Variable(tf.random_normal([7*7*256, 4096], stddev=np.sqrt(2./(7*7*256)))),
         'wf7': tf.Variable(tf.random_normal([4096, 4096], stddev=np.sqrt(2./4096))),
         'wo': tf.Variable(tf.random_normal([4096, 100], stddev=np.sqrt(2./4096)))
@@ -94,21 +93,23 @@ def alexnet(x, keep_dropout, train_phase):
 # Construct dataloader
 opt_data_train = {
     #'data_h5': 'miniplaces_256_train.h5',
-    'data_root': '../../data/images/',   # MODIFY PATH ACCORDINGLY
-    'data_list': '../../data/train.txt', # MODIFY PATH ACCORDINGLY
+    'data_root': '../data/images/',   # MODIFY PATH ACCORDINGLY
+    'data_list': '../data/train.txt', # MODIFY PATH ACCORDINGLY
     'load_size': load_size,
     'fine_size': fine_size,
     'data_mean': data_mean,
-    'randomize': True
+    'randomize': True,
+    'perm': True
     }
 opt_data_val = {
     #'data_h5': 'miniplaces_256_val.h5',
-    'data_root': '../../data/images/',   # MODIFY PATH ACCORDINGLY
-    'data_list': '../../data/val.txt',   # MODIFY PATH ACCORDINGLY
+    'data_root': '../data/images/',   # MODIFY PATH ACCORDINGLY
+    'data_list': '../data/val.txt',   # MODIFY PATH ACCORDINGLY
     'load_size': load_size,
     'fine_size': fine_size,
     'data_mean': data_mean,
-    'randomize': False
+    'randomize': False,
+    'perm': True
     }
 
 loader_train = DataLoaderDisk(**opt_data_train)

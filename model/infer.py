@@ -1,4 +1,5 @@
 import os, datetime
+import time
 import numpy as np
 import tensorflow as tf
 from tensorflow.contrib.layers.python.layers import batch_norm
@@ -8,24 +9,15 @@ from DataLoader import *
 batch_size = 1
 load_size = 256
 fine_size = 224
-c = 3
 data_mean = np.asarray([0.45834960097,0.44674252445,0.41352266842])
-
-# Training Parameters
-learning_rate = 0.001
-dropout = 0.5 # Dropout, probability to keep units
-training_iters = 15000
-step_display = 50
-step_save = 10000
-start_from = ''
-
 opt_data_test = {
-    'data_root': '../../data/images/',   # MODIFY PATH ACCORDINGLY
-    'data_list': '../../data/test.txt',   # MODIFY PATH ACCORDINGLY
+    'data_root': '../data/images/',   # MODIFY PATH ACCORDINGLY
+    'data_list': '../data/test.txt',   # MODIFY PATH ACCORDINGLY
     'load_size': load_size,
     'fine_size': fine_size,
     'data_mean': data_mean,
-    'randomize': False
+    'randomize': False,
+    'perm': False
     }
 
 loader_test = DataLoaderDisk(**opt_data_test)
@@ -42,22 +34,11 @@ y = graph.get_tensor_by_name("y:0")
 keep_dropout = graph.get_tensor_by_name("keep_dropout:0")
 train_phase = graph.get_tensor_by_name("train_phase:0")
 logits = graph.get_tensor_by_name("logits:0")
-probs =tf.nn.softmax(logits)
-values,indices = tf.nn.top_k(probs,k=5)
-
-
-
-step = 0
-
-# Evaluate on the whole validation set
-print('Evaluation on the whole test set...')
+values,indices = tf.nn.top_k(logits,k=5)
+print('Inference on the whole test set...')
 num_batch = loader_test.size()//batch_size
-acc1_total = 0.
-acc5_total = 0.
-
-
-with open("../../data/test.txt",'r') as f:
-    with open("../../data/prediction.txt",'w') as fo:
+with open("../data/test.txt",'r') as f:
+    with open("./predictions/prediction_"+str(time.time())+".txt",'w') as fo:
         loader_test.reset()
         out_lines = []
         in_lines = f.readlines()
