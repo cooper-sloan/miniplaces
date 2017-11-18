@@ -23,8 +23,6 @@ loader_test = DataLoaderDisk(**opt_data_test)
 saver = tf.train.import_meta_graph('./model_out/model-16000.meta')
 sess = tf.Session()
 saver.restore(sess,'./model_out/model-16000')
-# saver.restore(sess, tf.train.latest_checkpoint('./model_out/res-6000.meta'))
-# saver.restore(sess, './model_out/res-6000')
 
 graph = tf.get_default_graph()
 x = graph.get_tensor_by_name("x:0")
