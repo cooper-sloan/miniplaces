@@ -7,7 +7,7 @@ import pickle
 import matplotlib.pyplot as plt
 import numpy as np
 
-filename = 'conergence_data.txt'
+filename = 'conergence_data1.txt'
 
 
 data = {}
@@ -18,5 +18,6 @@ with open(filename, 'r') as file:
 n = np.arange(len(data['top1']))
 
 plt.plot(n, data['top1'])
+plt.plot(n, data['top5'])
 
 plt.show()
