@@ -7,6 +7,7 @@ import resnet_model
 from tensorflow.contrib.layers.python.layers import batch_norm
 from DataLoader import *
 import json
+import time
 
 # Dataset Parameters
 batch_size = 256
@@ -18,7 +19,7 @@ data_mean = np.asarray([0.45834960097,0.44674252445,0.41352266842])
 # Training Parameters
 learning_rate = 0.0001
 dropout = 0.5 # Dropout, probability to keep units
-training_iters = 5000
+training_iters = 1
 step_display = 50
 step_save = 200
 path_save = './model_out/res'
@@ -55,9 +56,19 @@ opt_data_val = {
         'randomize': False,
         'perm': True
         }
+opt_data_test = {
+    'data_root': '../data/images/',   # MODIFY PATH ACCORDINGLY
+    'data_list': '../data/test.txt',   # MODIFY PATH ACCORDINGLY
+    'load_size': load_size,
+    'fine_size': fine_size,
+    'data_mean': data_mean,
+    'randomize': False,
+    'perm': False
+}
 
 loader_train = DataLoaderDisk(**opt_data_train)
 loader_val = DataLoaderDisk(**opt_data_val)
+loader_test = DataLoaderDisk(**opt_data_test)
 #loader_train = DataLoaderH5(**opt_data_train)
 #loader_val = DataLoaderH5(**opt_data_val)
 
@@ -69,6 +80,7 @@ train_phase = tf.placeholder(tf.bool,name="train_phase")
 # logits = tf.identity(alexnet_model.alexnet(x, keep_dropout, train_phase),name='logits')
 res = resnet_model.imagenet_resnet_v2(18, 100)
 logits = tf.identity(res(x,train_phase),name='logits')
+values,indices = tf.nn.top_k(logits,k=5)
 
 loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y, logits=logits))
 train_optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(loss)
@@ -134,20 +146,38 @@ with tf.Session() as sess:
     print("Optimization Finished!")
 
     # Evaluate on the whole validation set
-    print('Evaluation on the whole validation set...')
-    num_batch = loader_val.size()//batch_size
-    acc1_total = 0.
-    acc5_total = 0.
-    loader_val.reset()
-    for i in range(num_batch):
-        images_batch, labels_batch = loader_val.next_batch(batch_size)
-        acc1, acc5 = sess.run([accuracy1, accuracy5], feed_dict={x: images_batch, y: labels_batch, keep_dropout: 1., train_phase: False})
-        acc1_total += acc1
-        acc5_total += acc5
-        print("Validation Accuracy Top1 = " + \
-                "{:.4f}".format(acc1) + ", Top5 = " + \
-                "{:.4f}".format(acc5))
+    # print('Evaluation on the whole validation set...')
+    # num_batch = loader_val.size()//batch_size
+    # acc1_total = 0.
+    # acc5_total = 0.
+    # loader_val.reset()
+    # for i in range(num_batch):
+        # images_batch, labels_batch = loader_val.next_batch(batch_size)
+        # acc1, acc5 = sess.run([accuracy1, accuracy5], feed_dict={x: images_batch, y: labels_batch, keep_dropout: 1., train_phase: True})
+        # acc1_total += acc1
+        # acc5_total += acc5
+        # print("Validation Accuracy Top1 = " + \
+                # "{:.4f}".format(acc1) + ", Top5 = " + \
+                # "{:.4f}".format(acc5))
 
-        acc1_total /= num_batch
-    acc5_total /= num_batch
-    print('Evaluation Finished! Accuracy Top1 = ' + "{:.4f}".format(acc1_total) + ", Top5 = " + "{:.4f}".format(acc5_total))
+        # acc1_total /= num_batch
+    # acc5_total /= num_batch
+    # print('Evaluation Finished! Accuracy Top1 = ' + "{:.4f}".format(acc1_total) + ", Top5 = " + "{:.4f}".format(acc5_total))
+
+    num_batch = loader_test.size()//batch_size
+    with open("../data/test.txt",'r') as f:
+        with open("./predictions/prediction_"+str(time.time())+".txt",'w') as fo:
+            loader_test.reset()
+            out_lines = []
+            in_lines = f.readlines()
+            for i in range(num_batch):
+                images_batch, labels_batch = loader_test.next_batch(batch_size)
+                p = sess.run(indices, feed_dict={x: images_batch, y: labels_batch, keep_dropout: 1., train_phase: False})
+                # p = sess.run(softmax, feed_dict={x: images_batch, y: labels_batch, train_phase: False})
+                in_line = in_lines[i].split(" ")
+                file_name = in_line[0]
+                out_line = file_name
+                for v in p[0]:
+                    out_line += " " + str(v)
+                out_lines.append(out_line)
+            fo.write("\n".join(out_lines))
