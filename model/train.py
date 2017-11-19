@@ -84,8 +84,10 @@ saver = tf.train.Saver()
 
 convergence_data = {
         'name': 'conergence_data1',
-        'top1': [],
-        'top5': [],
+        'top1_t': [],
+        'top5_t': [],
+        'top1_v': [],
+        'top5_v': [],
         'learning_rate': learning_rate,
         'dropout': dropout,
         'notes': '',
@@ -111,6 +113,9 @@ with tf.Session() as sess:
                     "{:.4f}".format(acc1) + ", Top5 = " + \
                     "{:.4f}".format(acc5))
 
+            convergence_data['top1_t'].append(acc1)
+            convergence_data['top5_t'].append(acc5)
+
             images_batch_val, labels_batch_val = loader_val.next_batch(batch_size)
             l, acc1, acc5 = sess.run([loss, accuracy1, accuracy5], feed_dict={x: images_batch_val, y: labels_batch_val, keep_dropout: 1., train_phase: True})
             print("-Iter " + str(step) + ", Validation Loss= " + \
@@ -118,8 +123,8 @@ with tf.Session() as sess:
                     "{:.4f}".format(acc1) + ", Top5 = " + \
                     "{:.4f}".format(acc5))
 
-            convergence_data['top1'].append(acc1)
-            convergence_data['top5'].append(acc5)
+            convergence_data['top1_v'].append(acc1)
+            convergence_data['top5_v'].append(acc5)
         sess.run(train_optimizer, feed_dict={x: images_batch, y: labels_batch, keep_dropout: dropout, train_phase: True})
 
         step += 1
