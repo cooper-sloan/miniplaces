@@ -127,9 +127,9 @@ with tf.Session() as sess:
         if step % step_save == 0:
             saver.save(sess, path_save, global_step=step)
             print("Model saved at Iter %d !" %(step))
+            with open(convergence_data['name']+'.txt', 'w') as f:
+                pickle.dump(convergence_data,f)
 
-    with open(convergence_data['name']+'.txt', 'w') as f:
-        pickle.dump(convergence_data,f)
 
     print("Optimization Finished!")
 
