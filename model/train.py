@@ -10,17 +10,17 @@ import json
 import time
 
 # Dataset Parameters
-batch_size = 256
+batch_size = 250
 load_size = 256
 fine_size = 224
 c = 3
 data_mean = np.asarray([0.45834960097,0.44674252445,0.41352266842])
-run_evaluation = False
+run_evaluation = True
 
 # Training Parameters
-learning_rate = 0.0001
+learning_rate = 0.00005
 dropout = 0.5 # Dropout, probability to keep units
-training_iters = 1
+training_iters = 2000
 step_display = 50
 step_save = 200
 path_save = './model_out/res'
@@ -80,7 +80,7 @@ train_phase = tf.placeholder(tf.bool,name="train_phase")
 
 # logits = tf.identity(alexnet_model.alexnet(x, keep_dropout, train_phase),name='logits')
 res = resnet_model.imagenet_resnet_v2(18, 100)
-logits = res(x,train_phase)
+logits = res(x,True)
 values,indices = tf.nn.top_k(logits,k=5)
 
 loss = tf.reduce_mean(tf.nn.sparse_softmax_cross_entropy_with_logits(labels=y, logits=logits))
