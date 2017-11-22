@@ -11,11 +11,11 @@ import numpy as np
 
 
 # Resnet 1 - learning rate tests
-files = ['resnet_1.txt']
+#files = ['resnet_1.txt']
 
 # Resnet 2 - elu tests
 #files = ['res_elu_data1.txt',  'res_elu_data2.txt']
-#files = ['res_aug.txt']
+files = ['res_aug.txt', 'res_aug2.txt']
 
 
 
