@@ -2,6 +2,7 @@ import os
 import numpy as np
 import scipy.misc
 import h5py
+import cv2
 np.random.seed(123)
 
 # loading data from .h5
@@ -34,9 +35,10 @@ class DataLoaderH5(object):
             image = self.im_set[self._idx]
             image = image.astype(np.float32)/255. - self.data_mean
             if self.randomize:
-                flip = np.random.random_integers(0, 1)
-                if flip>0:
-                    image = image[:,::-1,:]
+                trans = np.random.random_integers(-1, 1)
+                # if trans>0:
+                    # image = image[:,::-1,:]
+                image = cv2.trans(image, trans)
                 offset_h = np.random.random_integers(0, self.load_size-self.fine_size)
                 offset_w = np.random.random_integers(0, self.load_size-self.fine_size)
             else:
@@ -107,11 +109,24 @@ class DataLoaderDisk(object):
             image = image.astype(np.float32)/255.
             image = image - self.data_mean
             if self.randomize:
-                flip = np.random.random_integers(0, 1)
-                if flip>0:
+                trans = np.random.random_integers(0, 1)
+                if trans>0:
                     image = image[:,::-1,:]
                 offset_h = np.random.random_integers(0, self.load_size-self.fine_size)
                 offset_w = np.random.random_integers(0, self.load_size-self.fine_size)
+
+                # trans = np.random.random_integers(0, 1)
+                # cols,rows = 256,256
+                # if trans == 1:
+                    # image = cv2.flip(image, 0)
+                # # elif trans == 0:
+                    # # pass
+                # # else:
+                    # # p = np.random.random() * 2 -1
+                    # # M = cv2.getRotationMatrix2D((cols/2,rows/2),20*p,1)
+                    # # image = cv2.warpAffine(image,M,(cols,rows))
+                # offset_h = np.random.random_integers(0, self.load_size-self.fine_size)
+                # offset_w = np.random.random_integers(0, self.load_size-self.fine_size)
             else:
                 offset_h = (self.load_size-self.fine_size)//2
                 offset_w = (self.load_size-self.fine_size)//2
